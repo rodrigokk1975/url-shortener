@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.routers.links import router as links_router
+from app.routers.redirect import router as redirect_router
 import app.models  # noqa: F401
 
 
@@ -20,11 +21,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Registra rotas de links
-app.include_router(links_router)
-
 
 @app.get("/health", tags=["Health"])
 def health_check() -> dict[str, str]:
     """Retorna o status de integridade da API."""
     return {"status": "ok", "project": settings.PROJECT_NAME, "version": settings.VERSION}
+
+
+# Registra rotas de recursos
+app.include_router(links_router)
+
+# Registra rota catch-all de redirecionamento por último
+app.include_router(redirect_router)
