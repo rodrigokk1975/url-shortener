@@ -47,7 +47,7 @@
 ## 5. Roteiro de Progresso
 - [x] **Etapa 0:** Aprovação do PRD e criação do `MEMORY.md`
 - [x] **Etapa 1:** Estrutura inicial, ambiente virtual, `.gitignore` e dependências
-- [ ] **Etapa 2:** Configuração do banco de dados e modelos SQLAlchemy (`Link`, `Click`)
+- [x] **Etapa 2:** Configuração do banco de dados e modelos SQLAlchemy (`Link`, `Click`)
 - [ ] **Etapa 3:** Criação de link curto e validação de URL (RF1 e RF5) + testes
 - [ ] **Etapa 4:** Redirecionamento e tratamento 404 (RF2 e RF6) + testes
 - [ ] **Etapa 5:** Registro de cliques e endpoint de estatísticas (RF3 e RF4) + testes
