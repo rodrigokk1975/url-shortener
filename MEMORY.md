@@ -50,5 +50,5 @@
 - [x] **Etapa 2:** Configuração do banco de dados e modelos SQLAlchemy (`Link`, `Click`)
 - [x] **Etapa 3:** Criação de link curto e validação de URL (RF1 e RF5) + testes
 - [x] **Etapa 4:** Redirecionamento e tratamento 404 (RF2 e RF6) + testes
-- [ ] **Etapa 5:** Registro de cliques e endpoint de estatísticas (RF3 e RF4) + testes
+- [x] **Etapa 5:** Registro de cliques e endpoint de estatísticas (RF3 e RF4) + testes
 - [ ] **Etapa 6:** Dockerfile, `README.md` completo e testes finais integrados

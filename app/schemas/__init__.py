@@ -1,3 +1,3 @@
-from app.schemas.link import LinkCreate, LinkResponse
+from app.schemas.link import LinkCreate, LinkResponse, LinkStatsResponse
 
-__all__ = ["LinkCreate", "LinkResponse"]
+__all__ = ["LinkCreate", "LinkResponse", "LinkStatsResponse"]

@@ -41,3 +41,15 @@ class LinkResponse(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LinkStatsResponse(BaseModel):
+    id: int
+    short_code: str
+    original_url: str
+    short_url: str
+    created_at: datetime
+    total_clicks: int
+    last_clicked_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
