@@ -1,10 +1,14 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.routers.links import router as links_router
 from app.routers.redirect import router as redirect_router
 import app.models  # noqa: F401
+
+INDEX_FILE = Path(__file__).resolve().parent / "static" / "index.html"
 
 
 @asynccontextmanager
@@ -20,6 +24,12 @@ app = FastAPI(
     description="API para encurtamento de URLs e monitoramento de estatísticas de acesso.",
     lifespan=lifespan,
 )
+
+
+@app.get("/", include_in_schema=False)
+def serve_frontend() -> FileResponse:
+    """Serve a interface web minimalista do encurtador."""
+    return FileResponse(INDEX_FILE)
 
 
 @app.get("/health", tags=["Health"])

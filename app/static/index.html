@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>URL Shortener</title>
+  <meta name="description" content="Encurtador de URLs rápido com rastreamento de cliques em tempo real." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141413' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8f8f7;
+      --surface: #ffffff;
+      --surface-subtle: #f3f3f1;
+      --border: #e4e4e0;
+      --border-strong: #cfcfc9;
+      --ink: #141413;
+      --ink-secondary: #5c5c57;
+      --ink-muted: #8c8c85;
+      --accent: #141413;
+      --accent-hover: #2b2b28;
+      --success: #0f766e;
+      --success-bg: #f0fdfa;
+      --error: #b91c1c;
+      --error-bg: #fef2f2;
+      --error-border: #fecaca;
+      --radius: 10px;
+      --radius-sm: 7px;
+      --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    header {
+      padding: 24px 0 8px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--ink);
+      background: var(--surface-subtle);
+    }
+
+    /* Main */
+    main {
+      flex: 1;
+      padding: 40px 0 56px;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 4.5vw, 32px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--ink-secondary);
+      font-size: 15px;
+    }
+
+    /* Cards */
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: 0 1px 2px rgba(20, 20, 19, 0.03);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+    .card-hint {
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    /* Form controls */
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    label.sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    input[type="url"],
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      height: 44px;
+      padding: 0 13px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input::placeholder {
+      color: var(--ink-muted);
+    }
+
+    input:hover {
+      border-color: var(--border-strong);
+    }
+
+    input:focus {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(20, 20, 19, 0.08);
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .btn-primary {
+      height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-subtle);
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary.copied {
+      color: var(--success);
+      border-color: #99f6e4;
+      background: var(--success-bg);
+    }
+
+    .btn-ghost {
+      height: 36px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--ink-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      color: var(--ink);
+      background: var(--surface-subtle);
+    }
+
+    /* Feedback */
+    .error-msg {
+      margin-top: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--error);
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Shorten result */
+    .result-box {
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    .result-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .short-link {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .short-link:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .result-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .result-origin {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--ink-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Stats result */
+    .stats-box {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      animation: fadeIn 0.18s ease-out;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-cell {
+      padding: 14px;
+    }
+
+    .stat-cell + .stat-cell {
+      border-left: 1px solid var(--border);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-value.clicks {
+      font-size: 20px;
+    }
+
+    .stats-footer {
+      padding: 12px 14px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .stats-url {
+      min-width: 0;
+      font-size: 13px;
+      color: var(--ink-secondary);
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stats-url:hover {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* Footer */
+    footer {
+      padding: 20px 0 28px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .footer-inner a {
+      color: var(--ink-secondary);
+      text-decoration: none;
+    }
+
+    .footer-inner a:hover {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 520px) {
+      main {
+        padding: 28px 0 40px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      .btn-primary {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-cell + .stat-cell {
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </span>
+        URL Shortener
+      </a>
+      <a class="nav-link" href="/docs" target="_blank" rel="noopener noreferrer">API Docs &#8599;</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="hero">
+        <h1>Encurtador de URLs</h1>
+        <p class="subtitle">Transforme endereços longos em links curtos e acompanhe os cliques em tempo real.</p>
+      </section>
+
+      <div class="stack">
+        <!-- Encurtar URL -->
+        <section class="card" aria-labelledby="shorten-heading">
+          <div class="card-header">
+            <h2 class="card-title" id="shorten-heading">Encurtar link</h2>
+            <span class="card-hint">http:// ou https://</span>
+          </div>
+
+          <form id="shorten-form" novalidate>
+            <div class="input-row">
+              <label class="sr-only" for="url-input">URL para encurtar</label>
+              <input
+                id="url-input"
+                type="url"
+                placeholder="https://exemplo.com/pagina-muito-longa"
+                autocomplete="off"
+                required
+              />
+              <button id="shorten-btn" class="btn-primary" type="submit">Encurtar</button>
+            </div>
+          </form>
+
+          <div id="shorten-error" class="error-msg hidden" role="alert"></div>
+
+          <div id="shorten-result" class="result-box hidden" aria-live="polite">
+            <div class="result-top">
+              <a id="short-url-link" class="short-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+              <div class="result-actions">
+                <button id="copy-btn" class="btn-secondary" type="button">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span id="copy-label">Copiar</span>
+                </button>
+                <button id="inspect-btn" class="btn-ghost" type="button">Estatísticas</button>
+              </div>
+            </div>
+            <p id="origin-url-text" class="result-origin"></p>
+          </div>
+        </section>
+
+        <!-- Consultar Estatísticas -->
+        <section class="card" aria-labelledby="stats-heading">
+          <div class="card-header">
+            <h2 class="card-title" id="stats-heading">Consultar estatísticas</h2>
+            <span class="card-hint">Código ou link curto</span>
+          </div>
+
+          <form id="stats-form" novalidate>
+            <div class="input-row">
+              <label class="sr-only" for="code-input">Código curto ou URL encurtada</label>
+              <input
+                id="code-input"
+                type="text"
+                placeholder="Ex: aK9zQ1"
+                autocomplete="off"
+                required
+              />
+              <button id="stats-btn" class="btn-primary" type="submit">Consultar</button>
+            </div>
+          </form>
+
+          <div id="stats-error" class="error-msg hidden" role="alert"></div>
+
+          <div id="stats-result" class="stats-box hidden" aria-live="polite">
+            <div class="stats-grid">
+              <div class="stat-cell">
+                <span class="stat-label">Cliques</span>
+                <span id="stat-clicks" class="stat-value clicks">0</span>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-label">Último acesso</span>
+                <span id="stat-last" class="stat-value">—</span>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-label">Criado em</span>
+                <span id="stat-created" class="stat-value">—</span>
+              </div>
+            </div>
+            <div class="stats-footer">
+              <a id="stat-origin" class="stats-url" href="#" target="_blank" rel="noopener noreferrer"></a>
+              <button id="refresh-stats-btn" class="btn-ghost" type="button" title="Atualizar contagem">
+                Atualizar
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>FastAPI · SQLAlchemy · SQLite</span>
+      <a href="/health" target="_blank" rel="noopener noreferrer">Status da API</a>
+    </div>
+  </footer>
+
+  <script>
+    const shortenForm = document.getElementById("shorten-form");
+    const urlInput = document.getElementById("url-input");
+    const shortenBtn = document.getElementById("shorten-btn");
+    const shortenError = document.getElementById("shorten-error");
+    const shortenResult = document.getElementById("shorten-result");
+    const shortUrlLink = document.getElementById("short-url-link");
+    const originUrlText = document.getElementById("origin-url-text");
+    const copyBtn = document.getElementById("copy-btn");
+    const copyLabel = document.getElementById("copy-label");
+    const inspectBtn = document.getElementById("inspect-btn");
+
+    const statsForm = document.getElementById("stats-form");
+    const codeInput = document.getElementById("code-input");
+    const statsBtn = document.getElementById("stats-btn");
+    const statsError = document.getElementById("stats-error");
+    const statsResult = document.getElementById("stats-result");
+    const statClicks = document.getElementById("stat-clicks");
+    const statLast = document.getElementById("stat-last");
+    const statCreated = document.getElementById("stat-created");
+    const statOrigin = document.getElementById("stat-origin");
+    const refreshStatsBtn = document.getElementById("refresh-stats-btn");
+
+    let currentShortCode = "";
+    let lastStatsCode = "";
+    let copyTimer = null;
+
+    function parseError(data, fallback) {
+      if (!data) return fallback;
+      if (typeof data.detail === "string") return data.detail;
+      if (Array.isArray(data.detail) && data.detail.length > 0) {
+        const msg = data.detail[0].msg || fallback;
+        return msg.replace(/^Value error,\s*/i, "");
+      }
+      return fallback;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return "—";
+      // Garante interpretação em UTC caso o backend retorne ISO sem sufixo Z
+      const normalized = /[zZ]|[+-]\d{2}:\d{2}$/.test(iso) ? iso : iso + "Z";
+      const date = new Date(normalized);
+      if (Number.isNaN(date.getTime())) return "—";
+      return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+    }
+
+    function extractCode(raw) {
+      const trimmed = raw.trim();
+      if (!trimmed) return "";
+      try {
+        const parsed = new URL(trimmed);
+        const parts = parsed.pathname.split("/").filter(Boolean);
+        return parts[parts.length - 1] || "";
+      } catch {
+        return trimmed.replace(/^\/+|\/+$/g, "");
+      }
+    }
+
+    shortenForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      shortenError.classList.add("hidden");
+
+      const url = urlInput.value.trim();
+      if (!url) {
+        shortenError.textContent = "Informe uma URL para encurtar.";
+        shortenError.classList.remove("hidden");
+        urlInput.focus();
+        return;
+      }
+
+      shortenBtn.disabled = true;
+      shortenBtn.textContent = "Encurtando...";
+
+      try {
+        const res = await fetch("/links", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          shortenError.textContent = parseError(data, "Não foi possível encurtar a URL.");
+          shortenError.classList.remove("hidden");
+          return;
+        }
+
+        currentShortCode = data.short_code;
+        shortUrlLink.href = data.short_url;
+        shortUrlLink.textContent = data.short_url;
+        originUrlText.textContent = data.original_url;
+        originUrlText.title = data.original_url;
+        shortenResult.classList.remove("hidden");
+      } catch {
+        shortenError.textContent = "Erro de conexão com o servidor.";
+        shortenError.classList.remove("hidden");
+      } finally {
+        shortenBtn.disabled = false;
+        shortenBtn.textContent = "Encurtar";
+      }
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      const text = shortUrlLink.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.classList.add("copied");
+        copyLabel.textContent = "Copiado";
+        clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => {
+          copyBtn.classList.remove("copied");
+          copyLabel.textContent = "Copiar";
+        }, 1800);
+      } catch {
+        // Fallback silencioso se o navegador bloquear clipboard
+      }
+    });
+
+    inspectBtn.addEventListener("click", () => {
+      if (!currentShortCode) return;
+      codeInput.value = currentShortCode;
+      fetchStats(currentShortCode);
+    });
+
+    async function fetchStats(code) {
+      statsError.classList.add("hidden");
+      statsBtn.disabled = true;
+      refreshStatsBtn.disabled = true;
+
+      try {
+        const res = await fetch(`/links/${encodeURIComponent(code)}/stats`);
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          statsResult.classList.add("hidden");
+          statsError.textContent = parseError(data, "Código não encontrado.");
+          statsError.classList.remove("hidden");
+          return;
+        }
+
+        lastStatsCode = data.short_code;
+        statClicks.textContent = String(data.total_clicks);
+        statLast.textContent = formatDate(data.last_clicked_at);
+        statCreated.textContent = formatDate(data.created_at);
+        statOrigin.href = data.original_url;
+        statOrigin.textContent = data.original_url;
+        statOrigin.title = data.original_url;
+        statsResult.classList.remove("hidden");
+      } catch {
+        statsError.textContent = "Erro de conexão com o servidor.";
+        statsError.classList.remove("hidden");
+      } finally {
+        statsBtn.disabled = false;
+        refreshStatsBtn.disabled = false;
+      }
+    }
+
+    statsForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const code = extractCode(codeInput.value);
+      if (!code) {
+        statsError.textContent = "Informe um código curto ou link encurtado.";
+        statsError.classList.remove("hidden");
+        codeInput.focus();
+        return;
+      }
+      fetchStats(code);
+    });
+
+    refreshStatsBtn.addEventListener("click", () => {
+      if (lastStatsCode) fetchStats(lastStatsCode);
+    });
+  </script>
+</body>
+</html>

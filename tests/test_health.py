@@ -4,3 +4,10 @@ def test_health_check(client):
     data = response.json()
     assert data["status"] == "ok"
     assert "version" in data
+
+
+def test_serve_frontend(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Encurtador de URLs" in response.text
